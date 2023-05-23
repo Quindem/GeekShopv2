@@ -5,7 +5,7 @@
  */
 package servlet;
 
-import entity.Order;
+import entity.CustomerOrder;
 import entity.Product;
 import entity.User;
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class OrderServlet extends HttpServlet {
                 int userId = orderJsonObject.getInt("userId");
                 Product product =  productFacade.find((long)productId);
                 User user =  userFacade.find((long)userId);
-                Order order = new Order();
+                CustomerOrder order = new CustomerOrder();
                 order.setOrderStatus(orderStatus);
                 
                 order.setOrderDate(new GregorianCalendar().getTime());
