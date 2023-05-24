@@ -116,6 +116,11 @@ public class ProductServlet extends HttpServlet {
                     job.add("description", product.getDescription());
                     job.add("price",product.getPrice());
                     job.add("picture", product.getPicture());
+                    job.add("type",product.getType());
+                    job.add("height",product.getHeight());
+                    job.add("width",product.getWidth());
+                    job.add("weight",product.getWeight());
+                    job.add("material",product.getMaterial());
                     job.add("category", jobCategory.build());
                 
                 try (PrintWriter out = response.getWriter()) {
