@@ -32,7 +32,7 @@ import session.UserFacade;
  */
 @WebServlet(name = "ProductServlet", urlPatterns = {
     "/createProduct",
-    "/listProducts",
+    "/product",
     "/listProductCard",
    
     
@@ -104,28 +104,28 @@ public class ProductServlet extends HttpServlet {
                 break;
                 
         
-            case "/listProducts":
-                JsonArrayBuilder jabProduct = Json.createArrayBuilder();
-                List<Product> listProducts = productFacade.findAll();
+           case "/product":
+            String productId = request.getParameter("productId");
+                product = productFacade.find(Long.parseLong(productId));
                 job=Json.createObjectBuilder();
-                for (int i = 0; i < listProducts.size(); i++) {
-                    Product p = listProducts.get(i);
                     jobCategory=Json.createObjectBuilder();
-                    jobCategory.add("id", p.getCategory().getId());
-                    jobCategory.add("name", p.getCategory().getName());
-                    job.add("id", p.getId());
-                    job.add("name", p.getName());
-                    job.add("description", p.getDescription());
-                    job.add("price",p.getPrice());
-                    job.add("picture", p.getPicture());
+                    jobCategory.add("id", product.getCategory().getId());
+                    jobCategory.add("name", product.getCategory().getName());
+                    job.add("id", product.getId());
+                    job.add("name", product.getName());
+                    job.add("description", product.getDescription());
+                    job.add("price",product.getPrice());
+                    job.add("picture", product.getPicture());
                     job.add("category", jobCategory.build());
-                }
+                
                 try (PrintWriter out = response.getWriter()) {
                     out.println(job.build().toString());
                 }
                 break;
-                
-                case "/listProductCard":
+        
+    
+    
+                /*case "/listProductCard":
                 JsonArrayBuilder jabProductCard = Json.createArrayBuilder();
                 List<Product> listProductCards = productFacade.findAll();
                  job=Json.createObjectBuilder();
@@ -144,11 +144,39 @@ public class ProductServlet extends HttpServlet {
                 }
                 break;
                 
+                */
+                case "/listProductCard":
+                    JsonArrayBuilder jabProductCard = Json.createArrayBuilder();
+                    List<Product> listProductCards = productFacade.findAll();
+
+                    for (int i = 0; i < listProductCards.size(); i++) {
+                        Product p = listProductCards.get(i);
+                        JsonObjectBuilder jobProduct = Json.createObjectBuilder(); // Создаем новый JsonObjectBuilder для каждого объекта Product
+
+                        JsonObjectBuilder jobCategoryCard = Json.createObjectBuilder();
+                        jobCategoryCard.add("id", p.getCategory().getId());
+                        jobCategoryCard.add("name", p.getCategory().getName());
+
+                        jobProduct.add("id", p.getId());
+                        jobProduct.add("name", p.getName());
+                        jobProduct.add("price", p.getPrice());
+                        jobProduct.add("picture", p.getPicture());
+                        jobProduct.add("category", jobCategoryCard.build());
+
+                        jabProductCard.add(jobProduct); // Добавляем JsonObjectBuilder в JsonArrayBuilder
+                    }
+
+                    try (PrintWriter out = response.getWriter()) {
+                        out.println(jabProductCard.build().toString());
+                    }
+
+                    break;
              
         }
    
-        
     }
+    
+
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
