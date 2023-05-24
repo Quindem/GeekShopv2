@@ -32,8 +32,8 @@ import session.UserFacade;
  */
 @WebServlet(name = "ProductServlet", urlPatterns = {
     "/createProduct",
-    "/product",
-    "/listProductCard",
+    "/productById",
+    "/getAllProductCards",
    
     
     
@@ -104,7 +104,7 @@ public class ProductServlet extends HttpServlet {
                 break;
                 
         
-           case "/product":
+           case "/productById":
             String productId = request.getParameter("productId");
                 product = productFacade.find(Long.parseLong(productId));
                 job=Json.createObjectBuilder();
@@ -143,9 +143,9 @@ public class ProductServlet extends HttpServlet {
                     out.println(job.build().toString());
                 }
                 break;
-                
                 */
-                case "/listProductCard":
+                
+                case "/getAllProductCards":
                     JsonArrayBuilder jabProductCard = Json.createArrayBuilder();
                     List<Product> listProductCards = productFacade.findAll();
 
@@ -175,7 +175,7 @@ public class ProductServlet extends HttpServlet {
         }
    
     }
-    
+ 
 
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
