@@ -32,13 +32,13 @@ import session.UserFacade;
  */
 @WebServlet(name = "ProductServlet", urlPatterns = {
     "/createProduct",
-    "/productById",
+    "/product",
     "/getAllProductCards",
    
     
     
 })
-public class ProductServlet extends HttpServlet {
+public class ManagerServlet extends HttpServlet {
     @EJB private UserFacade userFacade; 
     @EJB private ProductFacade productFacade;
     @EJB private CategoryFacade categoryFacade;
@@ -104,29 +104,7 @@ public class ProductServlet extends HttpServlet {
                 break;
                 
         
-           case "/productById":
-            String productId = request.getParameter("productId");
-                product = productFacade.find(Long.parseLong(productId));
-                job=Json.createObjectBuilder();
-                    jobCategory=Json.createObjectBuilder();
-                    jobCategory.add("id", product.getCategory().getId());
-                    jobCategory.add("name", product.getCategory().getName());
-                    job.add("id", product.getId());
-                    job.add("name", product.getName());
-                    job.add("description", product.getDescription());
-                    job.add("price",product.getPrice());
-                    job.add("picture", product.getPicture());
-                    job.add("type",product.getType());
-                    job.add("height",product.getHeight());
-                    job.add("width",product.getWidth());
-                    job.add("weight",product.getWeight());
-                    job.add("material",product.getMaterial());
-                    job.add("category", jobCategory.build());
-                
-                try (PrintWriter out = response.getWriter()) {
-                    out.println(job.build().toString());
-                }
-                break;
+          
         
     
     
@@ -150,32 +128,7 @@ public class ProductServlet extends HttpServlet {
                 break;
                 */
                 
-                case "/getAllProductCards":
-                    JsonArrayBuilder jabProductCard = Json.createArrayBuilder();
-                    List<Product> listProductCards = productFacade.findAll();
-
-                    for (int i = 0; i < listProductCards.size(); i++) {
-                        Product p = listProductCards.get(i);
-                        JsonObjectBuilder jobProduct = Json.createObjectBuilder(); // Создаем новый JsonObjectBuilder для каждого объекта Product
-
-                        JsonObjectBuilder jobCategoryCard = Json.createObjectBuilder();
-                        jobCategoryCard.add("id", p.getCategory().getId());
-                        jobCategoryCard.add("name", p.getCategory().getName());
-
-                        jobProduct.add("id", p.getId());
-                        jobProduct.add("name", p.getName());
-                        jobProduct.add("price", p.getPrice());
-                        jobProduct.add("picture", p.getPicture());
-                        jobProduct.add("category", jobCategoryCard.build());
-
-                        jabProductCard.add(jobProduct); // Добавляем JsonObjectBuilder в JsonArrayBuilder
-                    }
-
-                    try (PrintWriter out = response.getWriter()) {
-                        out.println(jabProductCard.build().toString());
-                    }
-
-                    break;
+                
              
         }
    

@@ -5,10 +5,13 @@
  */
 package servlet;
 
+import entity.CustomerOrder;
+import entity.Product;
 import tools.EncryptPassword;
 import entity.User;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +27,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import session.OrderFacade;
+import session.ProductFacade;
 import session.UserFacade;
 
 /**
@@ -33,12 +38,15 @@ import session.UserFacade;
 @WebServlet(name = "UserServlet", urlPatterns = {
     "/userRegistration",
     "/listUsers",
+    "/createOrder"
     
 })
 public class UserServlet extends HttpServlet {
      public static enum Role {USER,MANAGER,ADMINISTRATOR};
     private EncryptPassword encryptPassword;
     @EJB private UserFacade userFacade; 
+    @EJB private ProductFacade productFacade; 
+    @EJB private OrderFacade orderFacade; 
     
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -71,7 +79,7 @@ public class UserServlet extends HttpServlet {
             }
             return;
         }
-        if(!authUser.getRoles().contains(UserServlet.Role.MANAGER.toString())){
+        if(!authUser.getRoles().contains(UserServlet.Role.USER.toString())){
             job.add("info", "Вы не авторизованы!");
             try (PrintWriter out = response.getWriter()) {
                 out.println(job.build().toString());
@@ -80,70 +88,89 @@ public class UserServlet extends HttpServlet {
         }
         String path = request.getServletPath();
         switch (path) {
-            case "/userRegistration":
-                JsonReader jsonReader = Json.createReader(request.getReader());
-                JsonObject jsonObject = jsonReader.readObject();
-                String firstname = jsonObject.getString("firstname");
-                String lastname = jsonObject.getString("lastname");
-                String email=jsonObject.getString("email");
-                String address=jsonObject.getString("address");
-                String password = jsonObject.getString("password");
-               
-                User user = new User();
-                user.setFirstname(firstname);
-                user.setLastname(lastname);
-                user.setEmail(email);
-                user.setAddress(address);
-                encryptPassword = new EncryptPassword();
-                user.setSalt(encryptPassword.getSalt());
-                password = encryptPassword.getEncryptedPass(password, user.getSalt());
-                user.setPassword(password);
-                user.getRoles().add(UserServlet.Role.USER.toString());
-                userFacade.create(user);
-                job.add("info", "Пользователь добавлен");
-                try (PrintWriter out = response.getWriter()) {
-                    out.println(job.build().toString());
+            case "/getAllProductCards":
+                JsonArrayBuilder jabProductCard = Json.createArrayBuilder();
+                List<Product> listProductCards = productFacade.findAll();
+
+                for (int i = 0; i < listProductCards.size(); i++) {
+                    Product p = listProductCards.get(i);
+                    JsonObjectBuilder jobProduct = Json.createObjectBuilder(); // Создаем новый JsonObjectBuilder для каждого объекта Product
+
+                    JsonObjectBuilder jobCategoryCard = Json.createObjectBuilder();
+                    jobCategoryCard.add("id", p.getCategory().getId());
+                    jobCategoryCard.add("name", p.getCategory().getName());
+
+                    jobProduct.add("id", p.getId());
+                    jobProduct.add("name", p.getName());
+                    jobProduct.add("price", p.getPrice());
+                    jobProduct.add("picture", p.getPicture());
+                    jobProduct.add("category", jobCategoryCard.build());
+
+                    jabProductCard.add(jobProduct); // Добавляем JsonObjectBuilder в JsonArrayBuilder
                 }
-              break;
-                  
-            /*case "/listUsers":
-                 JsonArrayBuilder jabUser = Json.createArrayBuilder();
-                List<User> listUsers = userFacade.findAll();
+
+                try (PrintWriter out = response.getWriter()) {
+                    out.println(jabProductCard.build().toString());
+                }
+
+                break;
+           
+            case "/product":
+                String productId = request.getParameter("productId");
+                Product product = productFacade.find(Long.parseLong(productId));
                 job=Json.createObjectBuilder();
-                for (int i = 0; i < listUsers.size(); i++) {
-                    User u = listUsers.get(i);
-                    job.add("id", u.getId());
-                    job.add("firstname", u.getFirstname());
-                    job.add("lastname", u.getLastname());
-                    job.add("email", u.getEmail());
-                    job.add("address", u.getAddress());
-                }
+                JsonObjectBuilder jobCategory=Json.createObjectBuilder();
+                jobCategory.add("id", product.getCategory().getId());
+                jobCategory.add("name", product.getCategory().getName());
+                job.add("id", product.getId());
+                job.add("name", product.getName());
+                job.add("description", product.getDescription());
+                job.add("price",product.getPrice());
+                job.add("picture", product.getPicture());
+                job.add("type",product.getType());
+                job.add("height",product.getHeight());
+                job.add("width",product.getWidth());
+                job.add("weight",product.getWeight());
+                job.add("material",product.getMaterial());
+                job.add("category", jobCategory.build());
+
+            try (PrintWriter out = response.getWriter()) {
+                out.println(job.build().toString());
+            }
+            break;
+                    
+            case "/createOrder":
+                JsonReader jsonReader = Json.createReader(request.getReader());
+                JsonObject orderJsonObject = jsonReader.readObject();
+               // int orderDate = orderJsonObject.getInt("orderDate");
               
+                boolean orderStatus = orderJsonObject.getBoolean("orderStatus");
+                int prodId = orderJsonObject.getInt("productId");
+                int userId = orderJsonObject.getInt("userId");
+                product =  productFacade.find((long)prodId);
+                 User user =  userFacade.find((long)userId);
+                CustomerOrder order = new CustomerOrder();
+                order.setOrderStatus(orderStatus);
+                
+                order.setOrderDate(new GregorianCalendar().getTime());
+                order.setUser(user);
+                order.setProduct(product);
+                orderFacade.create(order);
+                JsonObjectBuilder jobProduct=Json.createObjectBuilder();
+                JsonObjectBuilder jobUser=Json.createObjectBuilder();
+                jobProduct.add("id", order.getProduct().getId());
+                jobProduct.add("name", order.getProduct().getName());
+                jobUser.add("id", order.getUser().getId());
+                jobUser.add("email", order.getUser().getEmail());
+                job.add("orderStatus", order.getOrderStatus());
+              
+                job.add("orderDate", order.getOrderDate().toString());
+                job.add("product", jobProduct.build());
+                job.add("user", jobUser.build());
                 try (PrintWriter out = response.getWriter()) {
                     out.println(job.build().toString());
-                
-                break;*/
-              case "/listUsers":
-    JsonArrayBuilder jabUser = Json.createArrayBuilder();
-    List<User> listUsers = userFacade.findAll();
-    for (int i = 0; i < listUsers.size(); i++) {
-        User u = listUsers.get(i);
-        JsonObjectBuilder jobUser = Json.createObjectBuilder(); // Создаем JsonObjectBuilder для каждого пользователя
-        
-        jobUser.add("id", u.getId());
-        jobUser.add("firstname", u.getFirstname());
-        jobUser.add("lastname", u.getLastname());
-        jobUser.add("email", u.getEmail());
-        jobUser.add("address", u.getAddress());
-        
-        jabUser.add(jobUser); // Добавляем JsonObjectBuilder в JsonArrayBuilder
-    }
-    
-    try (PrintWriter out = response.getWriter()) {
-        out.println(jabUser.build().toString()); // Выводим JsonArrayBuilder
-    }
-    break;
-                } 
+                }
+                break;         } 
         
     }
     

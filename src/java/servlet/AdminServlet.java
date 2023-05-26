@@ -8,8 +8,10 @@ package servlet;
 import entity.User;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -139,7 +141,27 @@ public class AdminServlet extends HttpServlet {
                     }
                 }
                 break;
-           
+            
+         case "/listUsers":
+                JsonArrayBuilder jabUser = Json.createArrayBuilder();
+                List<User> listUsers = userFacade.findAll();
+                for (int i = 0; i < listUsers.size(); i++) {
+                    User u = listUsers.get(i);
+                    JsonObjectBuilder jobUser = Json.createObjectBuilder(); // Создаем JsonObjectBuilder для каждого пользователя
+
+                    jobUser.add("id", u.getId());
+                    jobUser.add("firstname", u.getFirstname());
+                    jobUser.add("lastname", u.getLastname());
+                    jobUser.add("email", u.getEmail());
+                    jobUser.add("address", u.getAddress());
+
+                    jabUser.add(jobUser); // Добавляем JsonObjectBuilder в JsonArrayBuilder
+                }
+
+                try (PrintWriter out = response.getWriter()) {
+                    out.println(jabUser.build().toString()); // Выводим JsonArrayBuilder
+                }
+                break;
 
         }
     }

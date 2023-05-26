@@ -101,6 +101,33 @@ private EncryptPassword encryptPassword;
                     out.println(job.build().toString());
                 }
                 break;
+                
+                  case "/userRegistration":
+                jsonReader = Json.createReader(request.getReader());
+                JsonObject jsonObject = jsonReader.readObject();
+                String firstname = jsonObject.getString("firstname");
+                String lastname = jsonObject.getString("lastname");
+                email=jsonObject.getString("email");
+                String address=jsonObject.getString("address");
+                password = jsonObject.getString("password");
+               
+                user = new User();
+                user.setFirstname(firstname);
+                user.setLastname(lastname);
+                user.setEmail(email);
+                user.setAddress(address);
+                encryptPassword = new EncryptPassword();
+                user.setSalt(encryptPassword.getSalt());
+                password = encryptPassword.getEncryptedPass(password, user.getSalt());
+                user.setPassword(password);
+                user.getRoles().add(UserServlet.Role.USER.toString());
+                userFacade.create(user);
+                job.add("info", "Пользователь добавлен");
+                try (PrintWriter out = response.getWriter()) {
+                    out.println(job.build().toString());
+                }
+                break;
+                
                 case "/logout":
                 session = request.getSession(false);
                 if(session != null){

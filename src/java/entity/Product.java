@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -30,7 +31,7 @@ public class Product implements Serializable {
     private String width;
     private String weight;
     private String material;
-    @ManyToOne
+    @OneToMany
     private Category category = new Category();
 
     public Product() {
