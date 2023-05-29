@@ -57,7 +57,7 @@ public class ManagerServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         JsonObjectBuilder job = Json.createObjectBuilder();
         
-         HttpSession session = request.getSession(false);
+        /* HttpSession session = request.getSession(false);
         if(session == null){
             job.add("info", "Вы не авторизованы!");
             try (PrintWriter out = response.getWriter()) {
@@ -79,12 +79,12 @@ public class ManagerServlet extends HttpServlet {
                 out.println(job.build().toString());
             }
             return;
-        }
+        }*/
         String path = request.getServletPath();
         switch (path) {
             case "/createProduct":
                 JsonReader jsonReader = Json.createReader(request.getReader());
-                JsonObject productJsonObject = jsonReader.readObject();
+                JsonObject productJsonObject = jsonReader.readObject();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
                 String name = productJsonObject.getString("name","");
                 String description = productJsonObject.getString("description","");
                 String price = productJsonObject.getString("price","");

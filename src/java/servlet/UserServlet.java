@@ -54,6 +54,16 @@ public class UserServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+    
+      public static boolean isRole(String role){
+        for(int i=0;i<UserServlet.Role.values().length;i++){
+            if(UserServlet.Role.values()[i].toString().equals(role)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");

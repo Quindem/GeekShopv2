@@ -70,6 +70,7 @@ private EncryptPassword encryptPassword;
         userFacade.create(user);
     }
     
+    
      protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");

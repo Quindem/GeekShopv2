@@ -50,7 +50,7 @@ public class AdminServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         HttpSession session = request.getSession(false);
         JsonObjectBuilder job = Json.createObjectBuilder();
-        if(session == null){
+        /*if(session == null){
             job.add("info", "У вас нет права. Авторизуйтесь");
             job.add("status", false);
             try (PrintWriter out = response.getWriter()) {
@@ -74,7 +74,7 @@ public class AdminServlet extends HttpServlet {
                 out.println(job.build().toString());
             }
             return;
-        }
+        }*/
          String path = request.getServletPath();
         switch (path) {
          case "/addRole":
@@ -84,29 +84,32 @@ public class AdminServlet extends HttpServlet {
                 String role = jsonObject.getString("role");
                 User user = userFacade.find(Long.parseLong(userId));
                 if(user == null){
-                    job.add("status", false);
                     job.add("info", "Нет такого пользователя");
                     try (PrintWriter out = response.getWriter()) {
                         out.println(job.build().toString());
                     }
                     break;
-                   }
-                if(user.getRoles().contains(role)){
+                }
+               
+                if("Administrator".equals(user.getEmail())){
+                    job.add("info", "Administrator неприкасаем");
                     job.add("status", false);
-                    job.add("info", "Такая роль у пользователя уже есть");
-                    try (PrintWriter out = response.getWriter()) {
-                        out.println(job.build().toString());
-                    }
-                    break;
-                }else{
+                        try (PrintWriter out = response.getWriter()) {
+                            out.println(job.build().toString());
+                        }
+                        break;
+                }
+                
+                if(!user.getRoles().contains(role) && UserServlet.isRole(role)){
+                    //если у пользователя нет такой роли и роль такая сущесвтвует в статическом enum
                     user.getRoles().add(role);
+                    job.add("info", "Роль изменена");
                     userFacade.edit(user);
-                    session.setAttribute("authUser", user);
-                    job.add("status", true);
-                    job.add("info", "Роль добавлена");
-                    try (PrintWriter out = response.getWriter()) {
-                        out.println(job.build().toString());
-                    }
+                }else{
+                    job.add("info", "Такая роль у пользователя уже есть");
+                }
+                try (PrintWriter out = response.getWriter()) {
+                    out.println(job.build().toString());
                 }
                 break;
             
@@ -155,6 +158,7 @@ public class AdminServlet extends HttpServlet {
                     jobUser.add("lastname", u.getLastname());
                     jobUser.add("email", u.getEmail());
                     jobUser.add("address", u.getAddress());
+                    
 
                     jabUser.add(jobUser); // Добавляем JsonObjectBuilder в JsonArrayBuilder
                 }
@@ -175,8 +179,35 @@ public class AdminServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-  
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
 
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
     }
      
 
