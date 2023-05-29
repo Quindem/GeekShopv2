@@ -8,11 +8,14 @@ package servlet;
 
 import tools.EncryptPassword;
 import converters.ConvertorToJson;
+import entity.Product;
 import entity.User;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -33,8 +36,12 @@ import session.UserFacade;
 @WebServlet(name = "LoginServlet", loadOnStartup = 1, urlPatterns = {
     "/login",
     "/logout",
+    "/userRegistration",
+    "/getAllProductCards",
+    "/product",
 })
 public class LoginServlet extends HttpServlet {
+    
 @EJB
     private UserFacade userFacade;
 @EJB
@@ -70,6 +77,58 @@ private EncryptPassword encryptPassword;
         JsonObjectBuilder job = Json.createObjectBuilder();
         String path = request.getServletPath();
         switch (path) {
+            case "/getAllProductCards":
+                JsonArrayBuilder jabProductCard = Json.createArrayBuilder();
+                List<Product> listProductCards = productFacade.findAll();
+
+                for (int i = 0; i < listProductCards.size(); i++) {
+                    Product p = listProductCards.get(i);
+                    JsonObjectBuilder jobProduct = Json.createObjectBuilder(); // Создаем новый JsonObjectBuilder для каждого объекта Product
+
+                    JsonObjectBuilder jobCategoryCard = Json.createObjectBuilder();
+                    jobCategoryCard.add("id", p.getCategory().getId());
+                    jobCategoryCard.add("name", p.getCategory().getName());
+
+                    jobProduct.add("id", p.getId());
+                    jobProduct.add("name", p.getName());
+                    jobProduct.add("price", p.getPrice());
+                    jobProduct.add("picture", p.getPicture());
+                    jobProduct.add("category", jobCategoryCard.build());
+
+                    jabProductCard.add(jobProduct); // Добавляем JsonObjectBuilder в JsonArrayBuilder
+                }
+
+                try (PrintWriter out = response.getWriter()) {
+                    out.println(jabProductCard.build().toString());
+                }
+
+                break;
+           
+            case "/product":
+                String productId = request.getParameter("productId");
+                Product product = productFacade.find(Long.parseLong(productId));
+                job=Json.createObjectBuilder();
+                JsonObjectBuilder jobCategory=Json.createObjectBuilder();
+                jobCategory.add("id", product.getCategory().getId());
+                jobCategory.add("name", product.getCategory().getName());
+                job.add("id", product.getId());
+                job.add("name", product.getName());
+                job.add("description", product.getDescription());
+                job.add("price",product.getPrice());
+                job.add("picture", product.getPicture());
+                job.add("type",product.getType());
+                job.add("height",product.getHeight());
+                job.add("width",product.getWidth());
+                job.add("weight",product.getWeight());
+                job.add("material",product.getMaterial());
+                job.add("category", jobCategory.build());
+
+            try (PrintWriter out = response.getWriter()) {
+                out.println(job.build().toString());
+            }
+            break;
+                    
+     
             case "/login":
                 JsonReader jsonReader = Json.createReader(request.getReader());
                 JsonObject loginJsonObject = jsonReader.readObject();

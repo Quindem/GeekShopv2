@@ -12,12 +12,8 @@ import entity.User;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -27,6 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import session.CategoryFacade;
 import session.OrderFacade;
 import session.ProductFacade;
 import session.UserFacade;
@@ -36,9 +33,8 @@ import session.UserFacade;
  * @author pupil
  */
 @WebServlet(name = "UserServlet", urlPatterns = {
-    "/userRegistration",
-    "/listUsers",
-    "/createOrder"
+    "/createOrder",
+    
     
 })
 public class UserServlet extends HttpServlet {
@@ -46,7 +42,8 @@ public class UserServlet extends HttpServlet {
     private EncryptPassword encryptPassword;
     @EJB private UserFacade userFacade; 
     @EJB private ProductFacade productFacade; 
-    @EJB private OrderFacade orderFacade; 
+    @EJB private OrderFacade orderFacade;
+    @EJB private CategoryFacade categoryFacade;
     
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -88,56 +85,7 @@ public class UserServlet extends HttpServlet {
         }
         String path = request.getServletPath();
         switch (path) {
-            case "/getAllProductCards":
-                JsonArrayBuilder jabProductCard = Json.createArrayBuilder();
-                List<Product> listProductCards = productFacade.findAll();
-
-                for (int i = 0; i < listProductCards.size(); i++) {
-                    Product p = listProductCards.get(i);
-                    JsonObjectBuilder jobProduct = Json.createObjectBuilder(); // Создаем новый JsonObjectBuilder для каждого объекта Product
-
-                    JsonObjectBuilder jobCategoryCard = Json.createObjectBuilder();
-                    jobCategoryCard.add("id", p.getCategory().getId());
-                    jobCategoryCard.add("name", p.getCategory().getName());
-
-                    jobProduct.add("id", p.getId());
-                    jobProduct.add("name", p.getName());
-                    jobProduct.add("price", p.getPrice());
-                    jobProduct.add("picture", p.getPicture());
-                    jobProduct.add("category", jobCategoryCard.build());
-
-                    jabProductCard.add(jobProduct); // Добавляем JsonObjectBuilder в JsonArrayBuilder
-                }
-
-                try (PrintWriter out = response.getWriter()) {
-                    out.println(jabProductCard.build().toString());
-                }
-
-                break;
            
-            case "/product":
-                String productId = request.getParameter("productId");
-                Product product = productFacade.find(Long.parseLong(productId));
-                job=Json.createObjectBuilder();
-                JsonObjectBuilder jobCategory=Json.createObjectBuilder();
-                jobCategory.add("id", product.getCategory().getId());
-                jobCategory.add("name", product.getCategory().getName());
-                job.add("id", product.getId());
-                job.add("name", product.getName());
-                job.add("description", product.getDescription());
-                job.add("price",product.getPrice());
-                job.add("picture", product.getPicture());
-                job.add("type",product.getType());
-                job.add("height",product.getHeight());
-                job.add("width",product.getWidth());
-                job.add("weight",product.getWeight());
-                job.add("material",product.getMaterial());
-                job.add("category", jobCategory.build());
-
-            try (PrintWriter out = response.getWriter()) {
-                out.println(job.build().toString());
-            }
-            break;
                     
             case "/createOrder":
                 JsonReader jsonReader = Json.createReader(request.getReader());
@@ -147,7 +95,7 @@ public class UserServlet extends HttpServlet {
                 boolean orderStatus = orderJsonObject.getBoolean("orderStatus");
                 int prodId = orderJsonObject.getInt("productId");
                 int userId = orderJsonObject.getInt("userId");
-                product =  productFacade.find((long)prodId);
+               Product product =  productFacade.find((long)prodId);
                  User user =  userFacade.find((long)userId);
                 CustomerOrder order = new CustomerOrder();
                 order.setOrderStatus(orderStatus);
@@ -170,8 +118,9 @@ public class UserServlet extends HttpServlet {
                 try (PrintWriter out = response.getWriter()) {
                     out.println(job.build().toString());
                 }
-                break;         } 
+                break;         
         
+        }
     }
     
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -215,3 +164,6 @@ public class UserServlet extends HttpServlet {
 
 
 }
+
+
+

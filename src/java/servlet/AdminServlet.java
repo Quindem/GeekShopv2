@@ -32,6 +32,7 @@ import session.UserFacade;
 @WebServlet(name = "AdminServlet", urlPatterns = {
     "/addRole",
     "/removeRole",
+    "/listUsers",
     
 })
 public class AdminServlet extends HttpServlet {

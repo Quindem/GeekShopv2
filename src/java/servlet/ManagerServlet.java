@@ -22,6 +22,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import session.CategoryFacade;
 import session.ProductFacade;
 import session.UserFacade;
@@ -32,8 +33,7 @@ import session.UserFacade;
  */
 @WebServlet(name = "ProductServlet", urlPatterns = {
     "/createProduct",
-    "/product",
-    "/getAllProductCards",
+    
    
     
     
@@ -56,6 +56,30 @@ public class ManagerServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
         JsonObjectBuilder job = Json.createObjectBuilder();
+        
+         HttpSession session = request.getSession(false);
+        if(session == null){
+            job.add("info", "Вы не авторизованы!");
+            try (PrintWriter out = response.getWriter()) {
+                out.println(job.build().toString());
+            }
+            return;
+        }
+        User authUser = (User) session.getAttribute("authUser");
+        if(authUser == null){
+            job.add("info", "Вы не авторизованы!");
+            try (PrintWriter out = response.getWriter()) {
+                out.println(job.build().toString());
+            }
+            return;
+        }
+        if(!authUser.getRoles().contains(UserServlet.Role.MANAGER.toString())){
+            job.add("info", "Вы не авторизованы!");
+            try (PrintWriter out = response.getWriter()) {
+                out.println(job.build().toString());
+            }
+            return;
+        }
         String path = request.getServletPath();
         switch (path) {
             case "/createProduct":
@@ -108,25 +132,6 @@ public class ManagerServlet extends HttpServlet {
         
     
     
-                /*case "/listProductCard":
-                JsonArrayBuilder jabProductCard = Json.createArrayBuilder();
-                List<Product> listProductCards = productFacade.findAll();
-                 job=Json.createObjectBuilder();
-                for (int i = 0; i < listProductCards.size(); i++) {
-                    Product p = listProductCards.get(i);
-                    jobCategory=Json.createObjectBuilder();
-                    jobCategory.add("id", p.getCategory().getId());
-                    job.add("id", p.getId());
-                    job.add("name", p.getName());
-                    job.add("price",p.getPrice());
-                    job.add("picture", p.getPicture());
-                    job.add("category", jobCategory.build());
-                }
-                try (PrintWriter out = response.getWriter()) {
-                    out.println(job.build().toString());
-                }
-                break;
-                */
                 
                 
              

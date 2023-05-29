@@ -31,7 +31,7 @@ public class Product implements Serializable {
     private String width;
     private String weight;
     private String material;
-    @OneToMany
+    @ManyToOne
     private Category category = new Category();
 
     public Product() {
