@@ -147,10 +147,14 @@ public class AdminServlet extends HttpServlet {
                 break;
             
          case "/listUsers":
-                JsonArrayBuilder jabUser = Json.createArrayBuilder();
+                JsonArrayBuilder jabUsers = Json.createArrayBuilder();
                 List<User> listUsers = userFacade.findAll();
                 for (int i = 0; i < listUsers.size(); i++) {
                     User u = listUsers.get(i);
+                    JsonArrayBuilder jabUserRoles = Json.createArrayBuilder();
+                    for(int j = 0; j< u.getRoles().size();j++){
+                        jabUserRoles.add(u.getRoles().get(j));
+                    }
                     JsonObjectBuilder jobUser = Json.createObjectBuilder(); // Создаем JsonObjectBuilder для каждого пользователя
 
                     jobUser.add("id", u.getId());
@@ -158,13 +162,14 @@ public class AdminServlet extends HttpServlet {
                     jobUser.add("lastname", u.getLastname());
                     jobUser.add("email", u.getEmail());
                     jobUser.add("address", u.getAddress());
+                    jobUser.add("roles", jabUserRoles.build());
                     
 
-                    jabUser.add(jobUser); // Добавляем JsonObjectBuilder в JsonArrayBuilder
+                    jabUsers.add(jobUser); // Добавляем JsonObjectBuilder в JsonArrayBuilder
                 }
 
                 try (PrintWriter out = response.getWriter()) {
-                    out.println(jabUser.build().toString()); // Выводим JsonArrayBuilder
+                    out.println(jabUsers.build().toString()); // Выводим JsonArrayBuilder
                 }
                 break;
 
